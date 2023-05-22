@@ -1,7 +1,7 @@
 ﻿using Csharp_Task_3.Helpers;
 
 
-namespace Csharp_Task_3.Data
+namespace Csharp_Task_3.Repository
 {
     public class PinMatrix
     {
@@ -56,7 +56,7 @@ namespace Csharp_Task_3.Data
 
             }
 
-            var cartesianList = Cartesian.CartesianProduct(mainlist);
+            var cartesianList = mainlist.CartesianProduct();
             string test = "";
             foreach (var cartesian in cartesianList)
             {
@@ -68,12 +68,12 @@ namespace Csharp_Task_3.Data
                 if (result.Contains(temp) == false)
                 {
                     result.Add(temp);
-                    test += temp + "," ;
+                    test += temp + ",";
                 }
                 else
                 {
                     string doubles = temp;
-                }    
+                }
             }
 
             return result;

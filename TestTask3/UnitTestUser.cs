@@ -1,7 +1,10 @@
-﻿using Csharp_Task_3.Controllers;
+﻿using Castle.Core.Configuration;
+using Csharp_Task_3.Controllers;
+using Csharp_Task_3.Data;
 using Csharp_Task_3.Models;
 using Csharp_Task_3.Models.Dto;
 using Csharp_Task_3.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -16,18 +19,27 @@ namespace Tests
     public class UnitTestUser
     {
         private UserRepository userRepository;
-        
+        ApplicationDbContext db;
+        private DbContextOptions<ApplicationDbContext> _options;
+        private IConfigurationRoot _configuration;
+
         [SetUp]
         public void Setup()
         {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true)
-                .Build();
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true);
+
+            _configuration = builder.Build();
+
+            _options = new DbContextOptionsBuilder<ApplicationDbContext>()
+              .UseSqlServer(_configuration.GetConnectionString("DeafaultSQLConnection"))
+              .Options;
 
             var mock = new Mock<ILogger<UserController>>();
             ILogger<UserController> logger = mock.Object;
 
-            userRepository = new UserRepository(configuration, logger);
+            userRepository = new UserRepository(_configuration, logger);
+            
         }
 
         [Test]
@@ -40,30 +52,38 @@ namespace Tests
             model.UserName = UserName;
             model.Password = Password;
 
-            LoginResponseDTO res = await userRepository.Login(model);
+            using (var context = new ApplicationDbContext(_options))
+            {
+                LoginResponseDTO res = await userRepository.Login(model, context);
 
-            if (ExpectedStatus)
-            {
-                if (res.IsLogged == true)
+                if (ExpectedStatus)
                 {
-                    Assert.True(true);
+                    if (res.IsLogged == true)
+                    {
+                        Assert.True(true);
+                    }
+                    else
+                    {
+                        Assert.False(true);
+                    }
                 }
                 else
                 {
-                    Assert.False(true);
+                    if (res.IsLogged == false)
+                    {
+                        Assert.True(true);
+                    }
+                    else
+                    {
+                        Assert.False(true);
+                    }
                 }
             }
-            else
-            {
-                if (res.IsLogged == false)
-                {
-                    Assert.True(true);
-                }
-                else
-                {
-                    Assert.False(true);
-                }
-            }
+
+
+                
+
+           
         }
         
         [Test]

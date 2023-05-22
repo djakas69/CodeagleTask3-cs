@@ -1,4 +1,4 @@
-using Csharp_Task_3.Data;
+using Csharp_Task_3.Repository;
 
 namespace Tests
 {

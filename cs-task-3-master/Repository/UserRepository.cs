@@ -1,10 +1,12 @@
 ﻿using Csharp_Task_3.Controllers;
+using Csharp_Task_3.Data;
 using Csharp_Task_3.Models;
 using Csharp_Task_3.Models.Dto;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Csharp_Task_3.Helpers;
 
 namespace Csharp_Task_3.Repository
 {
@@ -43,8 +45,68 @@ namespace Csharp_Task_3.Repository
                 return false;
             }
         }
+        /// <summary>
+        /// Login in database is only for one user for testing
+        /// User: darko
+        /// Password: 12345
+        /// 
+        /// </summary>
+        /// <param name="loginRequestDTO"></param>
+        /// <param name="_db"></param>
+        /// <returns></returns>
+        public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO, ApplicationDbContext _db)
+        {
+            LoginResponseDTO loginResponseDTO = new LoginResponseDTO()
+            {
+                Token = ""
+            };
 
-        public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
+            try
+            {
+                //with database option, find the user and check 
+                LocalUser findUser = _db.Users.FirstOrDefault(u => u.Name == loginRequestDTO.UserName);
+
+                if (findUser != null)
+                {
+                    string encPassword = Criptography.GetHashString(loginRequestDTO.Password);
+                    if (loginRequestDTO.UserName == findUser.UserName && encPassword == findUser.Password)
+                    {
+                        //valid user
+
+                        //Generate JWT Token
+                        var tokenHandler = new JwtSecurityTokenHandler();
+                        var key = Encoding.ASCII.GetBytes(secretKey);
+
+                        SecurityTokenDescriptor tokenDescriptor = Criptography.CreateTokenDesctiptor(secretKey, findUser);
+
+                        var token = tokenHandler.CreateToken(tokenDescriptor);
+                        
+                        //Response
+                        loginResponseDTO = new LoginResponseDTO()
+                        {
+                            Token = tokenHandler.WriteToken(token),
+                            User = findUser,
+                            IsLogged = true
+                        };
+
+
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning($"Login failed for user {loginRequestDTO.UserName}");
+                }
+            }
+            catch (Exception ee)
+            {
+
+                _logger.LogError($"Login exception {ee.Message}", ee);
+            }
+
+
+            return loginResponseDTO;
+        }
+        public async Task<LoginResponseDTO> LoginDemo(LoginRequestDTO loginRequestDTO)
         {
             //with database option, find the user and check 
             //so far we will use only one user for test, darko
@@ -55,6 +117,7 @@ namespace Csharp_Task_3.Repository
                 Token = "",
                 User = user
             };
+
             if (loginRequestDTO.UserName == demoUser && loginRequestDTO.Password == demoPwd)
             {
                 try
@@ -69,30 +132,22 @@ namespace Csharp_Task_3.Repository
                     var tokenHandler = new JwtSecurityTokenHandler();
                     var key = Encoding.ASCII.GetBytes(secretKey);
 
-                    var tokenDescriptor = new SecurityTokenDescriptor()
-                    {
-                        Subject = new ClaimsIdentity(new Claim[]
-                        {
-                            new Claim(ClaimTypes.Name, user.Id.ToString()),
-                            new Claim(ClaimTypes.Role, user.Role)
-                        }),
-                        Expires = DateTime.UtcNow.AddDays(7),
-                        SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                    };
+                    SecurityTokenDescriptor tokenDescriptor = Criptography.CreateTokenDesctiptor(secretKey,user);
+
                     var token = tokenHandler.CreateToken(tokenDescriptor);
                     //Response
                     loginResponseDTO = new LoginResponseDTO()
                     {
                         Token = tokenHandler.WriteToken(token),
                         User = user,
-                        IsLogged= true
+                        IsLogged = true
                     };
                 }
                 catch (Exception ee)
                 {
                     _logger.LogError($"Login exception {ee.Message}", ee);
                 }
-              
+
             }
 
             return loginResponseDTO;
@@ -117,10 +172,14 @@ namespace Csharp_Task_3.Repository
 
             //clean password before return user object
             user.Password = "";
-            
+
             return user;
 
         }
+
+
         #endregion
+
+       
     }
 }
