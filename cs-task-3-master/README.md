@@ -56,3 +56,7 @@ You have the following Options:
 
 ---
 For Questions: [@Robin Sadlo](mailto:robin.sadlo@codeagle.de)
+
+
+---
+Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjAiLCJyb2xlIjoiYWRtaW4iLCJuYmYiOjE2ODQ3NTg2OTYsImV4cCI6MTY4NTM2MzQ5NiwiaWF0IjoxNjg0NzU4Njk2fQ.OwkjfFMuFmJxvaRpQzs2WzENOcu1nz0U0OuyBliOMUY
