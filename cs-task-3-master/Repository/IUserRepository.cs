@@ -8,7 +8,7 @@ namespace Csharp_Task_3.Repository
     {
         bool IsUniqueUser(string username);
         Task<LoginResponseDTO> LoginDemo(LoginRequestDTO loginRequestDTO);
-        Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO, ApplicationDbContext db);
+        Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO);
         Task<LocalUser> Register(RegistrationRequestDTO registrationRequestDTO);
 
     }

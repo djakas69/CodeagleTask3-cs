@@ -16,25 +16,34 @@ namespace Csharp_Task_3.Repository
         private string secretKey;
         private string demoUser;
         private string demoPwd;
+        ApplicationDbContext _db;
         private readonly ILogger<UserController> _logger;
         #endregion
 
         #region CONSTRUCTOR
-        public UserRepository(IConfiguration configuration, ILogger<UserController> logger)
+        public UserRepository(IConfiguration configuration, ILogger<UserController> logger, ApplicationDbContext db)
         {
             _logger = logger;
             secretKey = configuration.GetValue<string>("ApiSettings:Secret");
             demoUser = configuration.GetValue<string>("ApiSettings:demoUser");
             demoPwd = configuration.GetValue<string>("ApiSettings:demoPwd");
+            _db = db;
+
         }
         #endregion
 
         #region METHODS
+        /// <summary>
+        /// for registration purpose
+        /// </summary>
+        /// <param name="UserName"></param>
+        /// <returns></returns>
         public bool IsUniqueUser(string UserName)
         {
             //for test only
             //that should be check in database
-            _logger.LogWarning($"For  demo purpose, this method IsUniqueUser will return true only for demo user {demoUser}");
+            //_logger.LogWarning($"For  demo purpose, this method IsUniqueUser will return true only for demo user {demoUser}");
+            LocalUser findUser = _db.Users.FirstOrDefault(u => u.Name == UserName);
 
             if (UserName == demoUser)
             {
@@ -54,7 +63,7 @@ namespace Csharp_Task_3.Repository
         /// <param name="loginRequestDTO"></param>
         /// <param name="_db"></param>
         /// <returns></returns>
-        public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO, ApplicationDbContext _db)
+        public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
         {
             LoginResponseDTO loginResponseDTO = new LoginResponseDTO()
             {

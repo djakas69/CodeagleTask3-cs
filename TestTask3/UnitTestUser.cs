@@ -15,7 +15,7 @@ using System.Text;
 
 namespace Tests
 {
-    
+
     public class UnitTestUser
     {
         private UserRepository userRepository;
@@ -38,8 +38,10 @@ namespace Tests
             var mock = new Mock<ILogger<UserController>>();
             ILogger<UserController> logger = mock.Object;
 
-            userRepository = new UserRepository(_configuration, logger);
-            
+
+            db = new ApplicationDbContext(_options);
+            userRepository = new UserRepository(_configuration, logger, db);
+
         }
 
         [Test]
@@ -52,42 +54,37 @@ namespace Tests
             model.UserName = UserName;
             model.Password = Password;
 
-            using (var context = new ApplicationDbContext(_options))
-            {
-                LoginResponseDTO res = await userRepository.Login(model, context);
 
-                if (ExpectedStatus)
+
+            LoginResponseDTO res = await userRepository.Login(model);
+
+            if (ExpectedStatus)
+            {
+                if (res.IsLogged == true)
                 {
-                    if (res.IsLogged == true)
-                    {
-                        Assert.True(true);
-                    }
-                    else
-                    {
-                        Assert.False(true);
-                    }
+                    Assert.True(true);
                 }
                 else
                 {
-                    if (res.IsLogged == false)
-                    {
-                        Assert.True(true);
-                    }
-                    else
-                    {
-                        Assert.False(true);
-                    }
+                    Assert.False(true);
+                }
+            }
+            else
+            {
+                if (res.IsLogged == false)
+                {
+                    Assert.True(true);
+                }
+                else
+                {
+                    Assert.False(true);
                 }
             }
 
-
-                
-
-           
         }
-        
+
         [Test]
-        [TestCase("theTokenKeyShouldBeAtLeast128bitLenght","darko", "12345", true)]
+        [TestCase("theTokenKeyShouldBeAtLeast128bitLenght", "darko", "12345", true)]
         [TestCase("theTokenKey", "darko", "12345", false)]
 
         public void CreateToken(string secretKey, string UserName, string Password, bool ExpectedStatus)
@@ -114,7 +111,7 @@ namespace Tests
                     SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
-                if(ExpectedStatus)
+                if (ExpectedStatus)
                 {
                     if (token != null)
                     {
@@ -136,7 +133,7 @@ namespace Tests
                         Assert.False(true);
                     }
                 }
-                
+
             }
             catch (Exception ee)
             {
@@ -148,8 +145,8 @@ namespace Tests
                 {
                     Assert.False(true);
                 }
-                    //Console.WriteLine(ee);
-                
+                //Console.WriteLine(ee);
+
             }
         }
 

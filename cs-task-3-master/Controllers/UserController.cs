@@ -24,7 +24,7 @@ namespace Csharp_Task_3.Controllers
         #region CONTROLLER
         public UserController(IConfiguration configuration,ILogger<UserController> logger, ApplicationDbContext db)
         {
-            _userRepo = new UserRepository(configuration, logger);
+            _userRepo = new UserRepository(configuration, logger, db);
             _response = new APIResponse();
             _logger = logger;
             _db = db;
@@ -37,7 +37,7 @@ namespace Csharp_Task_3.Controllers
         {
             try
             {                
-                var LoginResponse = await _userRepo.Login(model,_db);
+                var LoginResponse = await _userRepo.Login(model);
 
                 if (LoginResponse.User == null || string.IsNullOrEmpty(LoginResponse.Token))
                 {
