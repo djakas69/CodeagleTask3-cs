@@ -8,11 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="SQL\CrossJoin.sql" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Include="SQL\CrossJoin.sql" />
+      <Compile Remove="SQL\**" />
+      <Content Remove="SQL\**" />
+      <EmbeddedResource Remove="SQL\**" />
+      <None Remove="SQL\**" />
     </ItemGroup>
 
     <ItemGroup>
